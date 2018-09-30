@@ -4,6 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "crypto": "echo Cryptoo",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,5 +18,10 @@
   "bugs": {
     "url": "https://github.com/logicappsource/CryptooniteFET/issues"
   },
-  "homepage": "https://github.com/logicappsource/CryptooniteFET#readme"
+  "homepage": "https://github.com/logicappsource/CryptooniteFET#readme",
+  "dependencies": {
+    "ethereumjs-testrpc": "^6.0.3",
+    "express": "^4.16.3",
+    "web3": "^1.0.0-beta.36"
+  }
 }
