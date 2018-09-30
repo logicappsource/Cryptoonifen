@@ -2,24 +2,90 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title> </title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>Cryptoonite - FE </title>
   </head>
   <body>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
     <h1 id="response">NO Response </h1>
-    <button onclick="contactServer()">Contact the webserver</button>
+    <button onclick="requestAccountsWallet()">Get Wallets</button>
+
+    <div class="container">
+        <div class="row">
+              <div class="col-12">
+                    <table class="table table-dark">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Transactions</th>
+                          </tr>
+                        </thead>
+                        <tbody class="transaction-list"></tbody>
+                    </table>
+              </div>
+        </div>
+    </div>
 
     <script>
-    function contactServer() {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          var accounts = JSON.parse(this.responseText);
-         document.getElementById("response").innerHTML = accounts[0];
-        }
-      };
-      xhttp.open("GET", "ajax-request", true);
-      xhttp.send();
-    }
+
+
+        //MARK: Get Account wallets
+      function requestAccountsWallet(){
+
+      var request = $.ajax({
+          method: "GET",
+          dataType: "json",
+          url: "ajax-request",
+          cache: false
+        });
+
+        request.done(function(jData) {
+              //console.log(jData);
+              $.each(jData, function(i, trxt) {
+                  //console.log(trxt);
+                  $('.transaction-list').append(
+                        '<tr>' +
+                          '<th scope="row">3</th>' +
+                          '<td>'+ trxt+'</td>' +
+                        '</tr>');
+                  });
+          });
+
+        request.fail(function(textStatus) {
+              alert('Failed', textStatus);
+          });
+      }
+
+
+      // MARK: - Get Transactions from Blockchain
+      var txCount = web3.eth.getBlockTransactionCount('latest', function(error, txCount) {
+          if (!error) {
+            console.log('Latest BLOCK contains ' + txCount + ' Transactions:');
+            for (var i = 0; i < txCount; i++) {
+              web3.eth.getTransactionFromBlock('latest', i, function(err, transaction) {
+                if (!err) {
+                  console.log(transaction);
+
+                  console.log('Transaction to wallet:', transaction.to)
+
+                  console.log('Transaction from wallet:', transaction.from)
+
+                } else {
+                  console.error(err);
+                }
+              });
+            }
+          } else {
+            console.error(error);
+          }
+        });
+
+
     </script>
+
   </body>
 </html>
