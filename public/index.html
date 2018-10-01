@@ -11,11 +11,27 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.28.2/sweetalert2.all.js"></script>
     <nav class="navbar navbar-dark bg-dark">
-      <h2 style="color:white;"> Cryptoonite FET </h2>
+      <h2 style="color:white; "> Cryptoonite FET </h2>
     </nav>
 
-    <div class="container">
-          <h3 id="response">Input - Wallet - To Watch </h3>
+    <div class="container"><br>
+      <div class="alert alert-success" role="alert">
+<h4 class="alert-heading">Hej FET!</h4><br>
+<p>Ideen med mit script er at overvåge en "wallet" på Ethereum Blockchain - Som eks. kan være Hacket eller skal overvåges</p>
+<hr>
+<p class="mb-0">Cryptoonite scriptet loader de "SENESTE PENDING TRANSACTION" fra ETH blokchain som er ERC20 compabitle</p>
+<p class="mb-0">Herefter vil en alarm slå ud hvis den "Overvågnede adresse" pludselig laver en ny Transaction</p><br>
+<p class="mb-0">Den "Receiver wallet adresss" som så skal modtage beløbet, slår en ny alarm ud hvis "Contracten" tilhøre eks e af de top 3 VOl. exhcanges</p>
+<p class="mb-0">I Teorien ville det kunne lade sig gøre at "Freeze" den Receiver wallet hvor Transaction fra den "Surveliance Wallet" er på vej hen- Eks. ved at kontake exchange og Freeze den Wallet som er Receiver</p>
+<br>
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>For at teste scriptet!</strong> Er det vigtigt at man igeneem "etherscan.io" Hurtigt tager en random af de første pending transaction Wallet og bruger som input.(Kan tage tid at loade)
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+</div>
+          <h3 id="response" style="text-align:center;">Input - Wallet - Watch </h3>
           <input class="form-control" id="wallet-monitor">
           <button class="form-control" onclick="requestAccountsWallet()">Monitor Wallet</button>
           <button class="form-control" onclick="stopallexecution()">Stop Monitoring</button>
@@ -42,25 +58,14 @@
     <script>
           var watchContract = "";
           var wallet_monitor = "";
-          const BITTREX_CONTRACT = "0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98";
-          const BINANCE_CONTRACT = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
-          const BITFINEX_CONTRACT = "0x742d35cc6634c0532925a3b844bc454e4438f44e";
 
-          function compareExchangeSmartContracts(receiverWalletSurveliance){
-              console.log(receiverWalletSurveliance, 'official')
-              if(receiverWalletSurveliance == BINANCE_CONTRACT) {
-                swal(
-                      'Monitoring Wallet: '+ watchContract+' ',
-                      'OUTGOING TRANSACTION TO BINANCE! - Freeze wallet now',
-                      'success'
-                    )
-              }
-          }
+          // Index 1. Bitrex, 2. Binance, 3 Bitfinex
+          var EXCHANGES_CONTRACTS = ["0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98", "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be", "0x742d35cc6634c0532925a3b844bc454e4438f44e"];
+
 
           function stopallexecution(){
               throw new Error("Quit Process from blokcchain");
           }
-
 
           //MARK: Get Account wallets To Listen to
           function requestAccountsWallet(){
@@ -149,13 +154,28 @@
                 '</tr>');
         }
 
+        function compareExchangeSmartContracts(receiverWalletSurveliance){
+            console.log(receiverWalletSurveliance, 'Official Exchange wallet')
+
+            for(var i = 0; i < EXCHANGES_CONTRACTS.length; i++ ) {
+                var exchange = EXCHANGES_CONTRACTS[i];
+                if(receiverWalletSurveliance == exchange ){
+                  swal(
+                        'Monitoring Wallet: '+ watchContract+' ',
+                        'OUTGOING TRANSACTION TO BINANCE! - Freeze wallet now',
+                        'success'
+                      )
+                }
+            }
+        }
+
         // helper function to handle a transaction
         function handleTransaction(transaction) {
           //console.log('watchContract', watchContract);
           if (transaction.from == watchContract || (transaction.to != null && transaction.to == watchContract)) { //check if the transaction is related to our contract (Note: 'to' is null for a contract creation)
             logTransaction(transaction); //this transaction relates to our contract, so add it to the log
                 // output block
-                console.log('Match  Transaction from : ', transaction.from , '== ', watchContract)
+                console.log('##################### MATCH   Transaction from : ', transaction.from , '== ', watchContract+'#####################')
                 console.log(' TxHash: ' , transaction.hash); // hash can be null
                 console.log(' Ammount of ETH: ', transaction.value);
                 console.log(' Data: ', transaction.input);
@@ -171,6 +191,12 @@
                 // MONITORED/WATCHCONTRACT Activity - Start Track Transaction HASH and where cryto is send to
                 var wallet_receiver_surveliance = transaction.to;
 
+                swal(
+                      'Monitoring Wallet: '+ watchContract+' ',
+                      'OUTGOING TRANSACTION! - Freeze wallet now',
+                      'success'
+                    )
+
                 //NEW ALARM  - Asset is sent to a Big Exchange --> Contact now to freeze ammount while TXT is pending!
                 compareExchangeSmartContracts(wallet_receiver_surveliance);
                 // --> Alert user -> So the exchange can be Notified for BLOCKING THE TRANSACTION AND FREEZING THE WALLET!
@@ -178,7 +204,7 @@
               return;
           } else {
             console.log(' NO OUTGOIGN TRANSACTION')
-            //console.log(watchContract);
+            console.log(watchContract);
             requestAccountsWallet(); // call recurssion here for automatic
           }
           //ignore the rest of the transactions
