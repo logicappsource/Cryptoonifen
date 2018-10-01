@@ -10,17 +10,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
-    <h1 id="response">NO Response </h1>
-    <button onclick="requestAccountsWallet()">Get Wallets</button>
+    <nav class="navbar navbar-dark bg-dark">
+      <!-- Navbar content -->
+      <h2> Cryptoonite FET </h2>
+    </nav>
+
 
     <div class="container">
+          <h3 id="response">Input Wallet to Watch </h3>
+          <input class="form-control" id="wallet-monitor">
+          <button class="form-control" onclick="requestAccountsWallet()">Monitor Wallet</button>
+      <div class="alert"></div>
         <div class="row">
-              <div class="col-12">
+              <div class="col-lg-12">
+                <h1>Latest Pending Transactions Surveliance</h1>
+                <h4 class="block"></h4>
                     <table class="table table-dark">
                         <thead>
                           <tr>
                             <th scope="col">#</th>
-                            <th scope="col">Wallets to Surveliance</th>
+                            <th scope="col">Fom:</th>
+                            <th scope="col">To:</th>
+                            <th scope="col">TxHash:</th>
                           </tr>
                         </thead>
                         <tbody class="transaction-list"></tbody>
@@ -30,7 +41,7 @@
     </div>
 
     <script>
-
+          var watchContract = "";
           var wallet_monitor = "";
 
           //MARK: - Test script with - First transaction recorde == false
@@ -41,6 +52,10 @@
 
           //MARK: Get Account wallets To Listen to
           function requestAccountsWallet(){
+
+            //input form
+            watchContract = $('#wallet-monitor').val().toLowerCase();
+            console.log(watchContract);
 
           var request = $.ajax({
               method: "GET",
@@ -54,6 +69,7 @@
                   // First walllet to test
                   wallet_monitor = jData[0];
 
+                  /*
                   $.each(jData, function(i, trxt) {
                       //console.log(trxt);
                       $('.transaction-list').append(
@@ -62,6 +78,7 @@
                               '<td>'+ trxt+'</td>' +
                             '</tr>');
                       });
+                      */
                     getTransactionBlockchain();
               });
 
@@ -75,7 +92,8 @@
           function getTransactionBlockchain() {
               var txCount = web3.eth.getBlockTransactionCount('latest', function(error, txCount) {
                   if (!error) {
-                    console.log('Latest BLOCK contains ' + txCount + ' Transactions:');
+                    //console.log('Latest BLOCK contains ' + txCount + ' Transactions:');
+                    $('.block').text('BLOCK contains ' + txCount + ' Transactions:');
                     for (var i = 0; i < txCount; i++) {
                       web3.eth.getTransactionFromBlock('latest', i, function(err, transaction) {
                         if (!err) {
@@ -100,7 +118,7 @@
 
             //0xDd9fd6b6F8f7ea932997992bbE67EabB3e316f3C --   compare latest transactions. to or from addres == watchContract -->
 
-         var watchContract = "0x577aa2275bf1c55729d1fa68b8fffacc7eb979ae".toLowerCase(); // Monitor change TO MONITOR WALLET  OR INPUT SPECIFC WITHOUT VIRTUAL TEST
+         //var watchContract = "0xfe647fd203070dfa42ef35d4ff7a36a195ad22f5".toLowerCase(); // Monitor change TO MONITOR WALLET  OR INPUT SPECIFC WITHOUT VIRTUAL TEST
          var filter = web3.eth.filter('pending'); //set up the filter
 
         //a helper function to write transaction data to the console
@@ -111,33 +129,51 @@
             "To: " + transaction.to + "\n" +
             "Value: " + transaction.value + "\n" +
             "Data: \n" + transaction.input + "\n";
-        //  console.log(logString);
+          //console.log(logString);
+          $('.transaction-list').append(
+                '<tr>' +
+                  '<th scope="row">3</th>' +
+                  '<td>'+ transaction.from+'</td>' +
+                  '<td>'+ transaction.to+'</td>' +
+                  '<td>'+ transaction.hash+'</td>' +
+                '</tr>');
         }
 
         //a helper function to handle a transaction
         function handleTransaction(transaction) {
+          console.log('watchContract', watchContract);
           if (transaction.from == watchContract || (transaction.to != null && transaction.to == watchContract)) { //check if the transaction is related to our contract (Note: 'to' is null for a contract creation)
             logTransaction(transaction); //this transaction relates to our contract, so add it to the log
 
                 console.log('Match  Transaction from : ', transaction.from , '== ', watchContract)
-                console.log(' TxHash: ' , transaction.hash);
-                console.log(' Value: ', transaction.value);
+                //if(transaction.hash) {}
+                  console.log(' TxHash: ' , transaction.hash); // hash can be null
+
+                console.log(' Ammount of ETH: ', transaction.value);
                 console.log(' Data: ', transaction.input);
                 console.log(' TO:' , transaction.to);
+                // output block
 
                 // ALERT INPUT WALLET ADRESS ACTIVITY IS IN BLOCKHAIN ON PENDING TRANSACTION!!!
-                alert('Warning!', 'PENDING TRANSACTIONS IS RUNNING ON BLOCK CHAIN - OUTGOING WALLET ', transaction.from);
-
-
+                //alert('Warning!', 'PENDING TRANSACTIONS IS RUNNING ON BLOCK CHAIN - OUTGOING WALLET ', transaction.from);
+                $('.alert').append(
+                  '<div class="alert alert-danger" role="alert">' +
+                  'WARNING!! <a href="#" class="alert-link">PENDING TRANSACTIONS IS RUNNING ON BLOCK CHAIN - OUTGOING WALLET </a>NEW  RECEIVER WALLET = '+ transaction.to +
+                  '</div>');
 
                 // MONITORED/WATCHCONTRACT Activity - Start Track Transaction HASH and where cryto is send to
                 var wallet_receiver_surveliance = transaction.to;
 
                 // Comparing Transaction Wallet that is receveing Crypto
-                if(wallet_receiver_surveliance == 'binane adres ' || 'krakenadress' ||  'bitfinex adress'){
+                //if(wallet_receiver_surveliance == 'binane adres ' || 'krakenadress' ||  'bitfinex adress'){
                     //NEW ALARM  - Asset is sent to a Big Exchange --> Contact now to freeze ammount while TXT is pending!
                     // --> Alert user -> So the exchange can be Notified for BLOCKING THE TRANSACTION AND FREEZING THE WALLET!
-                }
+              //  }
+          } else {
+            console.log(' NO OUTGOIGN TRANSACTION')
+            console.log(watchContract);
+            //requestAccountsWallet();
+            // call recurssion here for automatic
           }
           //ignore the rest of the transactions
         }
