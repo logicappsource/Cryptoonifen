@@ -1,4 +1,4 @@
-# CryptooniteFET
+# Cryptoonifen
 
 Cryptoonite er et system jeg er blevet inspiret af at afprøve efter min Crypto App:
 https://itunes.apple.com/dk/app/cryptoonite/id1323759403?mt=8
